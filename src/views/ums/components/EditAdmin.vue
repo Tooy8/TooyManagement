@@ -1,0 +1,85 @@
+<template>
+  <el-dialog v-model="props.visible" title="编辑" :before-close="close">
+    <el-form :model="form" :label-width="formLabelWidth">
+      <el-form-item label="账号：">
+        <el-input v-model="newForm.username" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="姓名：">
+        <el-input v-model="newForm.nickName" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="邮箱：">
+        <el-input v-model="newForm.email" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="密码：">
+        <el-input v-model="newForm.password" type="password" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="备注：">
+        <el-input v-model="newForm.note" type="textarea" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="是否启用：">
+        <el-radio v-model="newForm.status" :label="1">是</el-radio>
+        <el-radio v-model="newForm.status" :label="0">否</el-radio>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="close">取消</el-button>
+        <el-button type="primary" @click="modifyAdmin"> 确定 </el-button>
+      </span>
+    </template>
+  </el-dialog>
+</template>
+
+<script lang='ts' setup>
+import { ref, toRefs, reactive, watch } from "vue";
+import { updateAdmin } from '../../../request/api'
+
+interface AdminObjItd {
+  username?: string
+  nickName?: string
+  email?: string
+  password?: string
+  note?: string
+  status?: number
+  id?: number
+
+}
+
+const props = defineProps<{
+  visible: boolean
+  form: AdminObjItd
+}>()
+
+const state = reactive<{ formLabelWidth: string; newForm: AdminObjItd }>({
+  formLabelWidth: "120px",
+  newForm: {}
+});
+
+const { formLabelWidth, newForm } = toRefs(state);
+//拷贝form
+watch(() => props.form, () => {
+  newForm.value = { ...props.form }
+})
+//点击取消
+const emit = defineEmits<{
+  (event: 'close', r?: string): void
+}>()
+const close = (r?: string) => {
+  emit('close', r)
+}
+//确定按钮
+const modifyAdmin = () => {
+  if (newForm.value.id) {
+    updateAdmin(newForm.value.id, newForm.value).then(res => {
+      if (res.code == 200) {
+        close('reload')
+      }
+    })
+  }
+
+}
+
+
+</script>
+
+<style lang="less" scoped></style>
